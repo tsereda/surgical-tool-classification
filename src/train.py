@@ -8,17 +8,14 @@ from .data import get_data_loaders
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def train_model(config):
-    # Initialize wandb
     wandb.init(config=config)
     config = wandb.config
     
-    # Get data
     train_loader, val_loader, class_names = get_data_loaders(
         batch_size=config.batch_size,
         val_split=config.val_split
     )
     
-    # Get model
     model = get_model(
         config.model_name, 
         len(class_names), 
@@ -26,7 +23,6 @@ def train_model(config):
         config.dropout
     ).to(DEVICE)
     
-    # Loss and optimizer
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(
         model.parameters(), 
@@ -35,12 +31,10 @@ def train_model(config):
     )
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=3)
     
-    # Training loop
     best_val_acc = 0.0
     patience_counter = 0
     
     for epoch in range(config.epochs):
-        # Training phase
         model.train()
         train_loss = 0.0
         train_correct = 0
@@ -63,7 +57,6 @@ def train_model(config):
         train_acc = train_correct / train_total
         train_loss = train_loss / len(train_loader)
         
-        # Validation phase
         model.eval()
         val_loss = 0.0
         val_correct = 0
@@ -83,10 +76,8 @@ def train_model(config):
         val_acc = val_correct / val_total
         val_loss = val_loss / len(val_loader)
         
-        # Update scheduler
         scheduler.step(val_loss)
         
-        # Log metrics
         wandb.log({
             'epoch': epoch + 1,
             'train_loss': train_loss,
@@ -100,7 +91,6 @@ def train_model(config):
               f"Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.4f}, "
               f"Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}")
         
-        # Early stopping and model saving
         if val_acc > best_val_acc:
             best_val_acc = val_acc
             torch.save(model.state_dict(), 'best_model.pth')
