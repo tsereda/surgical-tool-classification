@@ -1,0 +1,38 @@
+method: bayes
+metric:
+  goal: maximize
+  name: best_val_acc
+
+parameters:
+  model_name:
+    values: [resnet18, resnet50, efficientnet_b0, mobilenet_v2, simple_cnn]
+  
+  batch_size:
+    values: [16, 32, 64]
+  
+  learning_rate:
+    distribution: log_uniform_values
+    min: 0.00001
+    max: 0.01
+  
+  weight_decay:
+    distribution: log_uniform_values
+    min: 0.000001
+    max: 0.001
+  
+  dropout:
+    distribution: uniform
+    min: 0.1
+    max: 0.7
+  
+  pretrained:
+    values: [true, false]
+  
+  epochs:
+    value: 20
+  
+  val_split:
+    value: 0.2
+  
+  patience:
+    value: 7
